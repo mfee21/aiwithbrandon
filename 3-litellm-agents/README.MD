@@ -1,91 +1,42 @@
-# Tool Agent Example
+# LiteLLM Agent Example
 
-## What is a Tool Agent?
+## What is LiteLLM?
 
-A Tool Agent extends the basic ADK agent by incorporating tools that allow the agent to perform actions beyond just generating text responses. Tools enable agents to interact with external systems, retrieve information, and perform specific functions to accomplish tasks more effectively.
+LiteLLM is a Python library that provides a unified interface for interacting with multiple Large Language Model (LLM) providers through a single, consistent API. It serves as an adapter that allows you to:
 
-In this example, we demonstrate how to build an agent that can use built-in tools (like Google Search) and custom function tools to enhance its capabilities.
+- Use the same code to access 100+ different LLMs from providers like OpenAI, Anthropic, Google, AWS Bedrock, and more
+- Standardize inputs and outputs across different LLM providers
+- Track costs, manage API keys, and handle errors consistently
+- Implement fallbacks and load balancing across different models
 
-## Key Components
+In essence, LiteLLM acts as a unified wrapper that makes it easy to switch between different LLM providers without changing your application code.
 
-### 1. Built-in Tools
-ADK provides several built-in tools that you can use with your agents:
+## Why Use LiteLLM with ADK?
 
-- **Google Search**: Allows your agent to search the web for information
-- **Code Execution**: Enables your agent to run code snippets
-- **Vertex AI Search**: Lets your agent search through your own data
+The Agent Development Kit (ADK) is designed to be model-agnostic, meaning it can work with various LLM providers. LiteLLM enhances this capability by:
 
-**Important Note**: Currently, for each root agent or single agent, only one built-in tool is supported. See the [ADK documentation](https://google.github.io/adk-docs/tools/built-in-tools/#use-built-in-tools-with-other-tools) for more details.
+1. **Provider Flexibility**: Easily switch between LLM providers (OpenAI, Anthropic, etc.) without changing your agent code
+2. **Cost Optimization**: Choose the most cost-effective model for your specific use case
+3. **Model Exploration**: Experiment with different models to find the best performance for your task
+4. **Future-Proofing**: As new models are released, you can quickly adopt them without major code changes
 
-### 2. Custom Function Tools
-You can create your own tools by defining Python functions. These custom tools extend your agent's capabilities to perform specific tasks.
+This example demonstrates how to use LiteLLM with ADK to create an agent powered by models through OpenRouter rather than Google's Gemini models.
 
-#### Best Practices for Custom Function Tools:
+## Limitations When Using Non-Google Models
 
-- **Parameters**: Define your function parameters using standard JSON-serializable types (string, integer, list, dictionary)
-- **No Default Values**: Default values are not currently supported in ADK
-- **Return Type**: The preferred return type is a dictionary
-  - If you don't return a dictionary, ADK will wrap it into a dictionary `{"result": ...}`
-  - Best practice format: `{"status": "success", "error_message": None, "result": "..."}`
-- **Docstrings**: The function's docstring serves as the tool's description and is sent to the LLM
-  - Focus on clarity so the LLM understands how to use the tool effectively
+When using LiteLLM to integrate non-Google models with ADK, there are some important limitations to be aware of:
 
-## Limitations
+1. **No Access to Google Built-in Tools**: Non-Google models (like OpenAI, Anthropic, etc.) cannot use ADK's built-in Google tools such as:
+   - Google Search
+   - Code Execution
+   - Vertex AI Search
 
-When working with built-in tools in ADK, there are several important limitations to be aware of:
+2. **Custom Function Tools Only**: When using non-Google models, you can only use custom function tools (like the `get_dad_joke()` function in this example).
 
-### Single Built-in Tool Restriction
 
-**Currently, for each root agent or single agent, only one built-in tool is supported.**
+These limitations exist because built-in tools are specifically designed to work with Google's models and infrastructure. However, you can still create powerful agents using custom function tools and the wide variety of models available through LiteLLM.
 
-For example, this approach using two built-in tools within a single agent is **not** currently supported:
-
-```python
-root_agent = Agent(
-    name="RootAgent",
-    model="gemini-2.0-flash",
-    description="Root Agent",
-    tools=[built_in_code_execution, google_search],  # NOT SUPPORTED
-)
-```
-
-### Built-in Tools vs. Custom Tools
-
-**You cannot mix built-in tools with custom function tools in the same agent.**
-
-For example, this approach is **not** currently supported:
-
-```python
-def get_current_time() -> dict:
-    """Get the current time in the format YYYY-MM-DD HH:MM:SS"""
-    return {
-        "current_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    }
-
-root_agent = Agent(
-    name="RootAgent",
-    model="gemini-2.0-flash",
-    description="Root Agent",
-    tools=[google_search, get_current_time],  # NOT SUPPORTED
-)
-```
-
-To use both types of tools, you would need to use the Agent Tool approach described in the Multi-Agent example.
-
-## Implementation Example
-
-### Understanding the Code
-
-The agent.py file defines a tool agent that can use Google Search to find information on the web. The agent is configured with:
-
-1. A name and description
-2. The Gemini model to use
-3. Instructions that tell the agent how to behave and what tools it can use
-4. The tools it can access (in this case, google_search)
-
-The file also includes a commented-out example of a custom function tool `get_current_time()` that could be uncommented to explore custom tool functionality.
-
-### Getting Started
+## Getting Started
 
 This example uses the same virtual environment created in the root directory. Make sure you have:
 
@@ -99,15 +50,27 @@ source ../.venv/bin/activate
 ..\.venv\Scripts\Activate.ps1
 ```
 
-2. Set up your API key:
-   - Rename `.env.example` to `.env` in the tool_agent folder
-   - Add your Google API key to the `GOOGLE_API_KEY` variable in the `.env` file
+2. Set up your OpenRouter API key:
+   - Create an account at [OpenRouter](https://openrouter.ai/) if you don't have one
+   - Generate an API key at https://openrouter.ai/keys
+   - Rename `.env.example` to `.env` in the openrouter_dad_joke_agent folder
+   - Add your OpenRouter API key to the `OPENROUTER_API_KEY` variable in the `.env` file
 
-### Running the Example
+## Understanding the Code
 
-To run the tool agent example:
+This example demonstrates:
 
-1. Navigate to the 2-tool-agent directory containing your agent folder.
+1. How to use the `LiteLlm` model adapter with ADK
+2. How to connect to models through OpenRouter (specifically Claude 3.5 Sonnet)
+3. How to create a simple agent with a custom tool
+
+The agent is configured to tell dad jokes using a custom function tool `get_dad_joke()` and powered by Anthropic's Claude 3.5 Sonnet model through OpenRouter instead of Google's Gemini.
+
+## Running the Example
+
+To run the LiteLLM agent example:
+
+1. Navigate to the 3-litellm-agent directory containing your agent folder.
 
 2. Start the interactive web UI:
 ```bash
@@ -116,26 +79,50 @@ adk web
 
 3. Access the web UI by opening the URL shown in your terminal (typically http://localhost:8000)
 
-4. Select the "tool_agent" from the dropdown menu in the top-left corner of the UI
+4. Select the "openrouter_dad_joke_agent" from the dropdown menu in the top-left corner of the UI
 
 5. Start chatting with your agent in the textbox at the bottom of the screen
 
-The ADK CLI tool provides several options:
-
-- **`adk web`**: Launches an interactive web UI for testing your agent with a chat interface
-- **`adk run tool_agent`**: Runs your agent directly in the terminal
-- **`adk api_server`**: Starts a FastAPI server to test API requests to your agent
-
 ### Example Prompts to Try
 
-- "Search for recent news about artificial intelligence"
-- "Find information about Google's Agent Development Kit"
-- "What are the latest advancements in quantum computing?"
+- "Tell me a dad joke"
 
 You can exit the conversation or stop the server by pressing `Ctrl+C` in your terminal.
 
+## Modifying the Example
+
+You can easily modify this example to use different models from different providers through OpenRouter by changing the `LiteLlm` configuration. For example:
+
+```python
+# To use Claude 3.5 Sonnet from Anthropic through OpenRouter
+model = LiteLlm(
+    model="openrouter/anthropic/claude-3-5-sonnet",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+
+# To use GPT-4o from OpenAI through OpenRouter
+model = LiteLlm(
+    model="openrouter/openai/gpt-4o",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+
+# To use Llama 3 70B from Meta through OpenRouter
+model = LiteLlm(
+    model="openrouter/meta-llama/meta-llama-3-70b-instruct",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+
+# To use Mistral Large through OpenRouter
+model = LiteLlm(
+    model="openrouter/mistral/mistral-large-latest",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+```
+
 ## Additional Resources
 
-- [Types of tools](https://google.github.io/adk-docs/tools/#full-example-tavily-search)
-- [ADK Function Tools Documentation](https://google.github.io/adk-docs/tools/function-tools/)
-- [ADK Built-in Tools Documentation](https://google.github.io/adk-docs/tools/built-in-tools/)
+- [Google ADK LiteLLM Integration Documentation](https://google.github.io/adk-docs/tutorials/agent-team/#step-2-going-multi-model-with-litellm-optional)
+- [LiteLLM Documentation](https://docs.litellm.ai/docs/)
+- [LiteLLM Supported Providers](https://docs.litellm.ai/docs/providers)
+- [OpenRouter Documentation](https://openrouter.ai/docs)
+- [Anthropic Claude Models Overview](https://docs.anthropic.com/en/docs/about-claude/models/all-models)
